@@ -20,7 +20,7 @@
 		<tr>
 			<th class="oikealle">Hakusana:</th>
 			<th colspan="2"><input type="text" id="hakusana"></th>
-			<th><input type="button" value="hae" id="hakunappi"></th>
+			<th><input type="button" value="Hae" id="hakunappi"></th>
 		</tr>
 		<tr>
 			<th>Etunimi</th>
@@ -47,7 +47,7 @@ $(document).ready(function(){
 function haeAsiakkaat(){
 	$("#listaus tbody").empty();
 	$.ajax(
-			{url:"asiakkaat"+$("#hakusana").val(),
+			{url:"asiakkaat/"+$("#hakusana").val(),
 				type:"GET",
 				dataType:"json",
 				success:function(result){
