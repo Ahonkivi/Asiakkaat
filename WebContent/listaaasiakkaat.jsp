@@ -7,11 +7,21 @@
 <link rel="stylesheet" type="text/css" href="css/main.css">
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 <title>Insert title here</title>
+<style>
+.oikealle {
+	text-align;
+}
+</style>
 </head>
 <body>
 
 <table id="listaus">
 	<thead>
+		<tr>
+			<th class="oikealle">Hakusana:</th>
+			<th colspan="2"><input type="text" id="hakusana"></th>
+			<th><input type="button" value="hae" id="hakunappi"></th>
+		</tr>
 		<tr>
 			<th>Etunimi</th>
 			<th>Sukunimi</th>
@@ -26,8 +36,18 @@
 <script>
 
 $(document).ready(function(){
+	
+	haeAsiakkaat();
+	$("#hakunappi").click(function(){
+		haeAsiakkaat();
+	});
+
+});
+
+function haeAsiakkaat(){
+	$("#listaus tbody").empty();
 	$.ajax(
-			{url:"asiakkaat",
+			{url:"asiakkaat"+$("#hakusana").val(),
 				type:"GET",
 				dataType:"json",
 				success:function(result){
@@ -42,10 +62,8 @@ $(document).ready(function(){
 						$("#listaus tbody").append(htmlStr);
 					});
 					
-	}
-			});
-
-});
+		}});
+}
 
 </script>
 
