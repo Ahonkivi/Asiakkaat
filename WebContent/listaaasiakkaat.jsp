@@ -17,6 +17,9 @@
 
 <table id="listaus">
 	<thead>
+		<tr  class="oikealle"> 
+			<th colspan= "4"><span id="uusiAsiakas"> Lis‰‰ uusi asiakas</span></th>
+		</tr>	
 		<tr>
 			<th class="oikealle">Hakusana:</th>
 			<th colspan="2"><input type="text" id="hakusana"></th>
@@ -36,6 +39,10 @@
 <script>
 
 $(document).ready(function(){
+	
+	$("#uusiAsiakas").click(function(){
+		document.location="lisaaasiakas.jsp";
+	});
 	
 	haeAsiakkaat();
 	$("#hakunappi").click(function(){
