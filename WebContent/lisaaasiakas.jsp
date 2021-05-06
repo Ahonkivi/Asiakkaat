@@ -5,6 +5,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
 <link rel="stylesheet" type="text/css" href="css/main.css">
+<script src="scripts/main.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 <script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.15.0/jquery.validate.min.js"></script>
 <title>Lisää asiakas</title>
@@ -97,7 +98,7 @@
 	});
 
 	function lisaaTiedot() {
-		var formJsonStr = formDataJsonStr($("#tiedot").serielizeArray());
+		 var formJsonStr = formDataJsonStr($("#tiedot").serializeArray());
 		
 		$.ajax({url:"asiakkaat", data:formJsonStr, type:"POST", datatype:"json", success: function(result) {
 			if(result.response == 0){
@@ -106,9 +107,8 @@
 				$("#ilmo").html("Asiakkaan lisäminen onnistui.");
 				$("#etunimi", "#sukunimi", "#puhelin", "#sposti").val("");
 			}
-			
-		}});
-		
+		}
+		});
 	}
 	
 
