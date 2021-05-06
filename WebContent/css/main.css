@@ -39,3 +39,9 @@ td {
 #uusiAsiakas {
 	cursor: pointer;
 }
+
+.poista {
+	color: red;
+	text-decoration: underline;
+	cursor: pointer;	
+}
