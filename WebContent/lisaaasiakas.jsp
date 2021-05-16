@@ -3,26 +3,25 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<meta charset="ISO-8859-1">
 <link rel="stylesheet" type="text/css" href="css/main.css">
 <script src="scripts/main.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-<script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.15.0/jquery.validate.min.js"></script>
-<title>Lisää asiakas</title>
+<title>LisÃ¤Ã¤ asiakas</title>
 </head>
-<body>
+<body onkeydown="tutkiKey(event)">
 
 <form id="tiedot">
 	<table>
 		<thead>	
 			<tr>
-				<th colspan="5" class="oikealle"><span id="takaisin">Takaisin listaukseen</span></th>
+				<th colspan="3" id="ilmo"></th>
+				<th colspan="5" class="oikealle"><a href="listaaasiakkaat.jsp" id="takaisin">Takaisin listaukseen</a></th>
 			</tr>		
 			<tr>
 				<th>Etunimi</th>
 				<th>Sukunimi</th>
 				<th>Puhelin</th>
-				<th>Sähköposti</th>
+				<th>SÃ¤hkÃ¶posti</th>
 				<th></th>
 			</tr>
 		</thead>
@@ -32,7 +31,7 @@
 				<td><input type="text" name="sukunimi" id="sukunimi"></td>
 				<td><input type="text" name="puhelin" id="puhelin"></td>
 				<td><input type="text" name="sposti" id="sposti"></td> 
-				<td><input type="submit" id="tallenna" value="Lisää"></td>
+				<td><input type="button" name="nappi" id="tallenna" value="LisÃ¤Ã¤" onclick="lisaaTiedot()"></td>
 			</tr>
 		</tbody>
 	</table>
@@ -43,6 +42,15 @@
 
 <script>
 
+function tutkiKey(event){
+	if(event.keyCode==13){//Enter
+		lisaaTiedot();
+	}
+	
+};
+
+document.getElementById("asiakas_id").focus();
+/*
 	$(document).ready(function(){
 		$("#takaisin").click(function(){
 			document.location="listaaasiakkaat.jsp";
@@ -73,21 +81,21 @@
 			messages: {
 				etunimi: {
 					required: "Puuttuu",
-					number: "Syötä vain kirjaimia"
+					number: "SyÃ¶tÃ¤ vain kirjaimia"
 				},
 				sukunimi: {
 					required: "Puuttuu",
-					number: "Syötä vain kirjaimia"
+					number: "SyÃ¶tÃ¤ vain kirjaimia"
 				},
 				puhelin: {
 					required: "Puuttuu",
-					number: "Syötä vain numeroita",
+					number: "SyÃ¶tÃ¤ vain numeroita",
 					minlength: "Liian lyhyt",
-					maxlength: "Liian pitkä"
+					maxlength: "Liian pitkÃ¤"
 				},
 				sposti: {
 					required: "Puuttuu",
-					email: "Ei ole kelvollinen sähköpostiosoite"
+					email: "Ei ole kelvollinen sÃ¤hkÃ¶postiosoite"
 				}
 			},
 			submitHandler: function(form) {
@@ -96,23 +104,64 @@
 		});
 		
 	});
-
+*/
+/*
 	function lisaaTiedot() {
 		 var formJsonStr = formDataJsonStr($("#tiedot").serializeArray());
 		
 		$.ajax({url:"asiakkaat", data:formJsonStr, type:"POST", datatype:"json", success: function(result) {
 			if(result.response == 0){
-				$("#ilmo").html("Asiakkaan lisääminen epäonnistui.");
+				$("#ilmo").html("Asiakkaan lisÃ¤Ã¤minen epÃ¤onnistui.");
 			} else if(result.response == 1) {
-				$("#ilmo").html("Asiakkaan lisäminen onnistui.");
+				$("#ilmo").html("Asiakkaan lisÃ¤minen onnistui.");
 				$("#etunimi", "#sukunimi", "#puhelin", "#sposti").val("");
 			}
 		}
 		});
 	}
-	
+	*/
+	function lisaaTiedot() {	
+		var ilmo="";
+		if(document.getElementById("etunimi").value.length<1){
+			ilmo="Etunimi ei kelpaa!";		
+		}else if(document.getElementById("sukunimi").value.length<1){
+			ilmo="Sukunimi ei kelpaa!";		
+		}else if(document.getElementById("puhelin").value.length<5){
+			ilmo="Puhelinnumero ei kelpaa!";		
+		}else if(document.getElementById("sposti").value.length<5){
+			ilmo="SÃ¤hkÃ¶posti ei ole kelpaa!";			
+		}
+		if(ilmo!=""){
+			document.getElementById("ilmo").innerHTML=ilmo;
+			setTimeout(function(){ document.getElementById("ilmo").innerHTML=""; }, 3000);
+			return;
+		}
+		document.getElementById("etunimi").value=siivoa(document.getElementById("etunimi").value);
+		document.getElementById("sukunimi").value=siivoa(document.getElementById("sukunimi").value);
+		document.getElementById("puhelin").value=siivoa(document.getElementById("puhelin").value);
+		document.getElementById("sposti").value=siivoa(document.getElementById("sposti").value);	
+			
+		var formJsonStr=formDataToJSON(document.getElementById("tiedot")); //muutetaan lomakkeen tiedot json-stringiksi
+		//Lï¿½hetï¿½ï¿½n uudet tiedot backendiin
+		fetch("asiakkaat",{//Lï¿½hetetï¿½ï¿½n kutsu backendiin
+		      method: 'POST',
+		      body:formJsonStr
+		    })
+		.then( function (response) {//Odotetaan vastausta ja muutetaan JSON-vastaus objektiksi		
+			return response.json()
+		})
+		.then( function (responseJson) {//Otetaan vastaan objekti responseJson-parametrissï¿½	
+			var vastaus = responseJson.response;		
+			if(vastaus==0){
+				document.getElementById("ilmo").innerHTML= "Asiakkaan lisÃ¤Ã¤minen epÃ¤onnistui";
+	      	}else if(vastaus==1){	        	
+	      		document.getElementById("ilmo").innerHTML= "Asiakkaan lisÃ¤Ã¤minen onnistui";			      	
+			}
+			setTimeout(function(){ document.getElementById("ilmo").innerHTML=""; }, 5000);
+		});	
+		document.getElementById("tiedot").reset(); //tyhjennetï¿½ï¿½n tiedot -lomake
+	}
 
 </script>
-
 
 </html> 

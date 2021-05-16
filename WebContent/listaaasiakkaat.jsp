@@ -3,42 +3,103 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<meta charset="ISO-8859-1">
 <link rel="stylesheet" type="text/css" href="css/main.css">
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-<title>Insert title here</title>
+<title>Asiakas-ohjelma</title>
 <style>
 .oikealle {
 	text-align;
 }
 </style>
 </head>
-<body>
+<body onkeydown="tutkiKey(event)">
 
 <table id="listaus">
 	<thead>
-		<tr  class="oikealle"> 
-			<th colspan= "5"><span id="uusiAsiakas"> Lisää uusi asiakas</span></th>
+		<tr> 
+			<th colspan="4" id="ilmo"></th>
+			<th colspan= "5"><a id="uusiAsiakas" href="lisaaasiakas.jsp"> LisÃ¤Ã¤ uusi asiakas</a></th>
 		</tr>	
 		<tr>
 			<th class="oikealle">Hakusana:</th>
 			<th colspan="3"><input type="text" id="hakusana"></th>
-			<th><input type="button" value="Hae" id="hakunappi"></th>
+			<th><input type="button" value="Hae" id="hakunappi" onclick="haeTiedot()"></th>
 		</tr>
 		<tr>
 			<th>Etunimi</th>
 			<th>Sukunimi</th>
 			<th>Puhelin</th>
-			<th>Sähköposti</th>
+			<th>SÃ¤hkÃ¶posti</th>
 			<th></th>
 		</tr>
 	</thead>
-	<tbody>
+	<tbody id="tbody">
 	</tbody>
 </table>
 
 <script>
 
+haeTiedot();	
+document.getElementById("hakusana").focus();//viedï¿½ï¿½n kursori hakusana-kenttï¿½ï¿½n sivun latauksen yhteydessï¿½
+
+function tutkiKey(event){
+	if(event.keyCode==13){//Enter
+		haeTiedot();
+	}		
+}
+//Funktio tietojen hakemista varten
+//GET   /autot/{hakusana}
+function haeTiedot(){	
+	document.getElementById("tbody").innerHTML = "";
+	fetch("asiakkaat/" + document.getElementById("hakusana").value,{//Lï¿½hetetï¿½ï¿½n kutsu backendiin
+	      method: 'GET'
+	    })
+	.then(function (response) {//Odotetaan vastausta ja muutetaan JSON-vastaus objektiksi
+		return response.json()	
+	})
+	.then(function (responseJson) {//Otetaan vastaan objekti responseJson-parametrissï¿½		
+		var asiakkaat = responseJson.asiakkaat;	
+		var htmlStr="";
+		for(var i=0;i<asiakkaat.length;i++){			
+        	htmlStr+="<tr>";
+        	htmlStr+="<td>"+asiakkaat[i].etunimi+"</td>";
+        	htmlStr+="<td>"+asiakkaat[i].sukunimi+"</td>";
+        	htmlStr+="<td>"+asiakkaat[i].puhelin+"</td>";
+        	htmlStr+="<td>"+asiakkaat[i].sposti+"</td>";  
+        	htmlStr+="<td><a href='muutaasiakas.jsp?asiakas_id="+asiakkaat[i].asiakas_id+"'>Muuta</a>&nbsp;";
+        	htmlStr+="<span class='poista' onclick=poista('"+asiakkaat[i].asiakas_id+"')>Poista</span></td>";
+        	htmlStr+="</tr>";        	
+		}
+		document.getElementById("tbody").innerHTML = htmlStr;		
+	})	
+}
+
+//Funktio tietojen poistamista varten. Kutsutaan backin DELETE-metodia ja vï¿½litetï¿½ï¿½n poistettavan tiedon id. 
+//DELETE /autot/id
+function poista(asiakas_id){
+	if(confirm("Poista asiakas " + asiakas_id +"?")){	
+		fetch("asiakkaat/"+ asiakas_id,{//Lï¿½hetetï¿½ï¿½n kutsu backendiin
+		      method: 'DELETE'		      	      
+		    })
+		.then(function (response) {//Odotetaan vastausta ja muutetaan JSON-vastaus objektiksi
+			return response.json()
+		})
+		.then(function (responseJson) {//Otetaan vastaan objekti responseJson-parametrissï¿½		
+			var vastaus = responseJson.response;		
+			if(vastaus==0){
+				document.getElementById("ilmo").innerHTML= "Asiakkaan poisto epÃ¤onnistui.";
+	        }else if(vastaus==1){	        	
+	        	document.getElementById("ilmo").innerHTML="Asiakkaan " + asiakas_id +" poisto onnistui.";
+				haeTiedot();        	
+			}	
+			setTimeout(function(){ document.getElementById("ilmo").innerHTML=""; }, 5000);
+		})		
+	}	
+}
+
+
+
+/*
 $(document).ready(function(){
 	
 	$("#uusiAsiakas").click(function(){
@@ -79,9 +140,9 @@ function haeAsiakkaat(){
 		if(confirm("Poista asiakas " + asiakas_id +"?")){
 			$.ajax({url:"asiakkaat/"+asiakas_id, type:"DELETE", dataType:"json", success:function(result) { //result on joko {"response:1"} tai {"response:0"}
 		        if(result.response==0){
-		        	$("#ilmo").html("Asiakkaan poisto epäonnistui.");
+		        	$("#ilmo").html("Asiakkaan poisto epÃ¤onnistui.");
 		        }else if(result.response==1){
-		        	$("#rivi_"+asiakas_id).css("background-color", "red"); //Värjätään poistetun asiakkaan rivi
+		        	$("#rivi_"+asiakas_id).css("background-color", "red"); //VÃ¤rjÃ¤tÃ¤Ã¤n poistetun asiakkaan rivi
 		        	alert("Asiakkaan " + asiakas_id +" poisto onnistui.");
 					haeAsiakkaat();        	
 				}
@@ -89,6 +150,7 @@ function haeAsiakkaat(){
 		}
 	}
 
+*/
 
 </script>
 

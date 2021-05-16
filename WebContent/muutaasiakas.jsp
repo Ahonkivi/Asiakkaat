@@ -5,23 +5,22 @@
 <head>
 <meta charset="ISO-8859-1">
 <script src="scripts/main.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-<script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.15.0/jquery.validate.min.js"></script>
 <link rel="stylesheet" type="text/css" href="css/main.css">
 <title>Muuta asiakastiedot</title>
 </head>
-<body>
+<body onkeydown="tutkiKey(event)">
 <form id="tiedot">
 	<table>
 		<thead>	
 			<tr>
-				<th colspan="5" class="oikealle"><span id="takaisin">Takaisin listaukseen</span></th>
+				<th colspan="3" id="ilmo"></th>
+				<th colspan="5" class="oikealle"><a href="listaaasiakkaat.jsp" id="takaisin">Takaisin listaukseen</a></th>
 			</tr>		
 			<tr>
 				<th>Etunimi</th>
 				<th>Sukunimi</th>
 				<th>Puhelin</th>
-				<th>Sähköposti</th>
+				<th>SÃ¤hkÃ¶posti</th>
 				<th></th>
 			</tr>
 		</thead>
@@ -31,7 +30,7 @@
 				<td><input type="text" name="sukunimi" id="sukunimi"></td>
 				<td><input type="text" name="puhelin" id="puhelin"></td>
 				<td><input type="text" name="sposti" id="sposti"></td>
-				<td><input type="submit" id="tallenna" value="Hyväksy"></td>
+				<td><input type="button" id="tallenna" value="HyvÃ¤ksy" onclick="vieTiedot()"></td>
 			</tr>
 		</tbody>
 	</table>
@@ -40,13 +39,96 @@
 <span id="ilmo"></span>
 </body>
 <script>
+
+function tutkiKey(event){
+	if(event.keyCode==13){//Enter
+		vieTiedot();
+	}		
+}
+/*
+ var tutkiKey = (event) => {
+	if(event.keyCode==13){//Enter
+		vieTiedot();
+	}	
+}
+*/
+
+document.getElementById("etunimi").focus();//viedï¿½ï¿½n kursori rekno-kenttï¿½ï¿½n sivun latauksen yhteydessï¿½
+
+//Haetaan muutettavan asiakkaan tiedot. Kutsutaan backin GET-metodia ja vï¿½litetï¿½ï¿½n kutsun mukana muutettavan tiedon id
+//GET /asiakkaat/haeyksi/id
+var asiakas_id = requestURLParam("asiakas_id"); //Funktio lï¿½ytyy scripts/main.js 
+fetch("asiakkaat/haeyksi/" + asiakas_id,{//Lï¿½hetetï¿½ï¿½n kutsu backendiin
+      method: 'GET'	      
+    })
+.then( function (response) {//Odotetaan vastausta ja muutetaan JSON-vastausteksti objektiksi
+	return response.json()
+})
+.then( function (responseJson) {//Otetaan vastaan objekti responseJson-parametrissï¿½	
+	console.log(responseJson);
+	document.getElementById("asiakas_id").value = asiakas_id;		
+	document.getElementById("etunimi").value = responseJson.etunimi;	
+	document.getElementById("sukunimi").value = responseJson.sukunimi;	
+	document.getElementById("puhelin").value = responseJson.puhelin;	
+	document.getElementById("sposti").value = responseJson.sposti;	
+	
+});	
+
+//Funktio tietojen muuttamista varten. Kutsutaan backin PUT-metodia ja vï¿½litetï¿½ï¿½n kutsun mukana muutetut tiedot json-stringinï¿½.
+//PUT /autot/
+function vieTiedot(){	
+	var ilmo="";
+	if(document.getElementById("etunimi").value.length<1){
+		ilmo="Etunimi ei kelpaa!";		
+	}else if(document.getElementById("sukunimi").value.length<2){
+		ilmo="Sukunimi ei kelpaa!";		
+	}else if(document.getElementById("puhelin").value.length<2){
+		ilmo="Puhelin ei kelpaa!";		
+	}else if(document.getElementById("sposti").value.length<3){
+		ilmo="SÃ¤hkÃ¶posti ei ole kelpaa!";		
+	}
+	if(ilmo!=""){
+		document.getElementById("ilmo").innerHTML=ilmo;
+		setTimeout(function(){ document.getElementById("ilmo").innerHTML=""; }, 3000);
+		return;
+	}
+	document.getElementById("etunimi").value=siivoa(document.getElementById("etunimi").value);
+	document.getElementById("sukunimi").value=siivoa(document.getElementById("sukunimi").value);
+	document.getElementById("puhelin").value=siivoa(document.getElementById("puhelin").value);
+	document.getElementById("sposti").value=siivoa(document.getElementById("sposti").value);	
+	
+	var formJsonStr=formDataToJSON(document.getElementById("tiedot")); //muutetaan lomakkeen tiedot json-stringiksi
+	console.log(formJsonStr);
+	//Lï¿½hetï¿½ï¿½n muutetut tiedot backendiin
+	fetch("asiakkaat",{//Lï¿½hetetï¿½ï¿½n kutsu backendiin
+	      method: 'PUT',
+	      body:formJsonStr
+	    })
+	.then( function (response) {//Odotetaan vastausta ja muutetaan JSON-vastaus objektiksi
+		return response.json();
+	})
+	.then( function (responseJson) {//Otetaan vastaan objekti responseJson-parametrissï¿½	
+		var vastaus = responseJson.response;		
+		if(vastaus==0){
+			document.getElementById("ilmo").innerHTML= "Tietojen pÃ¤ivitys epÃ¤onnistui";
+        }else if(vastaus==1){	        	
+        	document.getElementById("ilmo").innerHTML= "Tietojen pÃ¤ivitys onnistui";			      	
+		}	
+		setTimeout(function(){ document.getElementById("ilmo").innerHTML=""; }, 5000);
+	});	
+	document.getElementById("tiedot").reset(); //tyhjennetï¿½ï¿½n tiedot -lomake
+}
+
+
+
+/*
 $(document).ready(function(){
 	$("#takaisin").click(function(){
 		document.location="listaaasiakkaat.jsp";
 	});
-	//Haetaan muutettavan auton tiedot. Kutsutaan backin GET-metodia ja välitetään kutsun mukana muutettavan tiedon id
+	//Haetaan muutettavan auton tiedot. Kutsutaan backin GET-metodia ja vÃ¤litetÃ¤Ã¤n kutsun mukana muutettavan tiedon id
 	//GET /autot/haeyksi/rekno
-	var asiakas_id = requestURLParam("asiakas_id"); //Funktio löytyy scripts/main.js
+	var asiakas_id = requestURLParam("asiakas_id"); //Funktio lÃ¶ytyy scripts/main.js
 	console.log("asiakas_id formissa", asiakas_id);
 	$.ajax({url:"asiakkaat/haeyksi/"+asiakas_id, type:"GET", dataType:"json", success:function(result){	
 		$("#asiakas_id").val(asiakas_id);		
@@ -80,21 +162,21 @@ $(document).ready(function(){
 		messages: {
 			etunimi: {
 				required: "Puuttuu",
-				number: "Syötä vain kirjaimia"
+				number: "SyÃ¶tÃ¤ vain kirjaimia"
 			},
 			sukunimi: {
 				required: "Puuttuu",
-				number: "Syötä vain kirjaimia"
+				number: "SyÃ¶tÃ¤ vain kirjaimia"
 			},
 			puhelin: {
 				required: "Puuttuu",
-				number: "Syötä vain numeroita",
+				number: "SyÃ¶tÃ¤ vain numeroita",
 				minlength: "Liian lyhyt",
-				maxlength: "Liian pitkä"
+				maxlength: "Liian pitkÃ¤"
 			},
 			sposti: {
 				required: "Puuttuu",
-				email: "Ei ole kelvollinen sähköpostiosoite"
+				email: "Ei ole kelvollinen sÃ¤hkÃ¶postiosoite"
 			}
 		},
 		submitHandler: function(form) {	
@@ -102,19 +184,21 @@ $(document).ready(function(){
 		}		
 	}); 	
 });
-//funktio tietojen päivittämistä varten. Kutsutaan backin PUT-metodia ja välitetään kutsun mukana uudet tiedot json-stringinä.
+//funktio tietojen pÃ¤ivittÃ¤mistÃ¤ varten. Kutsutaan backin PUT-metodia ja vÃ¤litetÃ¤Ã¤n kutsun mukana uudet tiedot json-stringinÃ¤.
 //PUT /autot/
 function paivitaTiedot(){	
 	var formJsonStr = formDataJsonStr($("#tiedot").serializeArray()); //muutetaan lomakkeen tiedot json-stringiksi
 	console.log("Hello i am paivitatiedot() formdata will be printed", formJsonStr)
 	$.ajax({url:"asiakkaat", data:formJsonStr, type:"PUT", dataType:"json", success:function(result) { //result on joko {"response:1"} tai {"response:0"}       
 		if(result.response==0){
-      	$("#ilmo").html("Asiakkaan päivittäminen epäonnistui.");
+      	$("#ilmo").html("Asiakkaan pÃ¤ivittÃ¤minen epÃ¤onnistui.");
       }else if(result.response==1){			
-      	$("#ilmo").html("Asiakkaan päivittäminen onnistui.");
+      	$("#ilmo").html("Asiakkaan pÃ¤ivittÃ¤minen onnistui.");
       	$("#etunimi", "#sukunimi", "#puhelin", "#sposti").val("");
 	  }
   }});	
 }
+*/
+
 </script>
 </html>

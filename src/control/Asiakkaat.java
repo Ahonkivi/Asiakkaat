@@ -31,18 +31,6 @@ public class Asiakkaat extends HttpServlet {
 		 System.out.println("Asiakkaat.doGet()");
 		 String pathInfo = request.getPathInfo();
 		 System.out.println("polku: "+pathInfo);
-//		 String hakusana = "";
-//		 if(pathInfo != null) {
-//		 hakusana = pathInfo.replace("/","");
-//		 }
-//		 Dao dao = new Dao();
-//		 ArrayList<Asiakas> asiakkaat = dao.listaaKaikki(hakusana);
-//		 System.out.println(asiakkaat);
-//		 String strJSON = new JSONObject().put("asiakkaat", asiakkaat).toString();
-//		 response.setContentType("application/json");
-//		 PrintWriter out = response.getWriter();
-//		 out.println(strJSON);
-//	}
 	Dao dao = new Dao();
 	ArrayList<Asiakas> asiakkaat;
 	String strJSON="";
@@ -52,12 +40,18 @@ public class Asiakkaat extends HttpServlet {
 	}else if(pathInfo.indexOf("haeyksi")!=-1) {		//polussa on sana "haeyksi", eli haetaan yhden auton tiedot
 		String asiakas_id = pathInfo.replace("/haeyksi/", ""); //poistetaan polusta "/haeyksi/", j‰ljelle j‰‰ rekno		
 		Asiakas asiakas = dao.etsiAsiakas(asiakas_id);
+		if (asiakas == null) {
+			strJSON="{}";
+		}
+		
+		else {
 		JSONObject JSON = new JSONObject();
 		JSON.put("etunimi", asiakas.getEtunimi());
 		JSON.put("sukunimi", asiakas.getSukunimi());
 		JSON.put("puhelin", asiakas.getPuhelin());
 		JSON.put("sposti", asiakas.getSposti());	
-		strJSON = JSON.toString();		
+		strJSON = JSON.toString();	
+		}
 	}else{ //Haetaan hakusanan mukaiset autot
 		String hakusana = pathInfo.replace("/", "");
 		asiakkaat = dao.listaaKaikki(hakusana);
